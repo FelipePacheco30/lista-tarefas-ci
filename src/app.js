@@ -13,7 +13,12 @@ export function criarApp(repositorio = criarRepositorio()) {
 
   app.get('/health', (_req, res) => res.json({ status: 'ok' }));
 
-  app.get('/api/tarefas', (_req, res) => res.json(repositorio.listar()));
+  app.get('/api/tarefas', (req, res) => {
+    const filtro = req.query.concluida;
+    const tarefas = repositorio.listar();
+    if (filtro === undefined) return res.json(tarefas);
+    res.json(tarefas.filter((tarefa) => String(tarefa.concluida) === filtro));
+  });
 
   app.get('/api/tarefas/:id', (req, res) => {
     const tarefa = repositorio.buscar(Number(req.params.id));

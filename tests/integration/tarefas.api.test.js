@@ -42,6 +42,13 @@ describe('API /api/tarefas', () => {
     expect((await request(app).get('/api/tarefas/99')).status).toBe(404);
   });
 
+  it('GET filtra as tarefas pelo campo concluida', async () => {
+    await request(app).post('/api/tarefas').send({ titulo: 'Pendente' });
+    await request(app).post('/api/tarefas').send({ titulo: 'Feita', concluida: true });
+    const resposta = await request(app).get('/api/tarefas?concluida=true');
+    expect(resposta.body.map((tarefa) => tarefa.titulo)).toEqual(['Feita']);
+  });
+
   it('PUT atualiza uma tarefa', async () => {
     await request(app).post('/api/tarefas').send({ titulo: 'Configurar CI' });
     const resposta = await request(app)

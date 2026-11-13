@@ -23,7 +23,7 @@ form {
   display: flex;
   gap: 8px;
 }
-input {
+form input {
   flex: 1;
   padding: 8px 10px;
   border: 1px solid #d0d7de;

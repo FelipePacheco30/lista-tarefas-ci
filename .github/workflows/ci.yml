@@ -1,8 +1,11 @@
 name: CI
 
 # Passo 1 — Gatilho: o pipeline roda a cada pull request aberto ou atualizado para a main.
+# O push na main (merge do PR) roda o mesmo pipeline e publica a imagem.
 on:
   pull_request:
+    branches: [main]
+  push:
     branches: [main]
 
 jobs:
@@ -52,3 +55,32 @@ jobs:
       - run: npm ci
       - run: npm run test:unit
       - run: npm run test:integration
+
+  # Passo 5 — Criar imagem: usa o artefato do build, testa o contêiner e publica no GHCR.
+  imagem:
+    name: Criar imagem Docker
+    needs: testes
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/download-artifact@v5
+        with:
+          name: dist
+          path: dist/
+      - name: Construir a imagem
+        run: docker build -t app:${{ github.sha }} .
+      - name: Testar o contêiner
+        run: |
+          docker run -d -p 3000:3000 app:${{ github.sha }}
+          sleep 3
+          curl --fail http://localhost:3000/health
+      - name: Publicar no GitHub Container Registry
+        if: github.event_name == 'push'
+        run: |
+          IMAGEM=ghcr.io/${GITHUB_REPOSITORY,,}
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+          docker tag app:${{ github.sha }} $IMAGEM:latest
+          docker push $IMAGEM:latest

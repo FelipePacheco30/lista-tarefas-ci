@@ -1,0 +1,21 @@
+name: CI
+
+# Passo 1 — Gatilho: o pipeline roda a cada pull request aberto ou atualizado para a main.
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  # Passo 2 — Análise estática (ESLint) e verificação de formatação (Prettier).
+  qualidade:
+    name: Análise estática e formatação
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run format:check

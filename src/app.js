@@ -14,9 +14,9 @@ export function criarApp(repositorio = criarRepositorio()) {
   app.get('/health', (_req, res) => res.json({ status: 'ok' }));
 
   app.get('/api/tarefas', (req, res) => {
-    var filtro = req.query.concluida;
+    const filtro = req.query.concluida;
     const tarefas = repositorio.listar();
-    if (filtro == undefined) return res.json(tarefas);
+    if (filtro === undefined) return res.json(tarefas);
     res.json(tarefas.filter((tarefa) => String(tarefa.concluida) === filtro));
   });
 
